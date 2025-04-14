@@ -25,7 +25,10 @@ public class BasicGameApp implements Runnable {
     //Sets the width and height of the program window
     Character dinosaur;
     Character meteorite;
-
+    Character dinoEgg;
+    boolean dinosaurVsMeteorite;
+    boolean meteroriteVsdinoEgg;
+    int imageChange = 0;
 
     Image backgroundPic;
 
@@ -57,11 +60,14 @@ public class BasicGameApp implements Runnable {
         //variable and objects
         //create (construct) the objects needed for the game
 
-        dinosaur = new Character(600, 200, 3, 0, 250, 200);
+        dinosaur = new Character(600, 200, 3, 3, 250, 200);
         dinosaur.pic = Toolkit.getDefaultToolkit().getImage("dinosaur.png");
 
-        meteorite = new Character(200, 500, 3, 0, 125, 100);
+        meteorite = new Character(200, 500, 3, 3, 125, 100);
         meteorite.pic = Toolkit.getDefaultToolkit().getImage("meteorite.png");
+
+        dinoEgg = new Character(400, 300, 3, 3, 120, 140);
+        dinoEgg.pic = Toolkit.getDefaultToolkit().getImage("dinoEgg.png");
 
     } // end BasicGameApp constructor
 
@@ -77,6 +83,7 @@ public class BasicGameApp implements Runnable {
         //for the moment we will loop things forever.
         while (true) {
             moveThings();  //move all the game objects
+            collisions();
             render();  // paint the graphics
             pause(10); // sleep for 10 ms
         }
@@ -84,8 +91,51 @@ public class BasicGameApp implements Runnable {
 
     public void moveThings() {
         dinosaur.move();
-        meteorite.move();
+        meteorite.wrap();
+        dinoEgg.move();
         //call the move() code for each object
+    }
+
+    public void collisions() {
+        if (dinosaur.hitbox.intersects(meteorite.hitbox) == true && dinosaurVsMeteorite == false) {
+
+            dinosaurVsMeteorite = true;
+
+            dinosaur.width = dinosaur.width + 20;
+            dinosaur.height = dinosaur.height + 20;
+        }
+        if (dinosaur.hitbox.intersects(meteorite.hitbox) == false) {
+            dinosaurVsMeteorite = false;
+        }
+
+        if (meteorite.hitbox.intersects(dinoEgg.hitbox) == true && meteroriteVsdinoEgg == false){
+
+            meteroriteVsdinoEgg = true;
+
+            imageChange = imageChange + 1;
+            System.out.println("changing imageChange to " + imageChange);
+
+            if (imageChange > 2) {
+                imageChange = 0;
+            }
+
+            if (imageChange == 0){
+                dinoEgg.pic = Toolkit.getDefaultToolkit().getImage("dinoEgg.png");
+            }
+            else if (imageChange == 1) {
+                dinoEgg.pic = Toolkit.getDefaultToolkit().getImage("hatch.png");
+            }
+            else if (imageChange == 2) {
+                dinoEgg.pic = Toolkit.getDefaultToolkit().getImage("finalDino.png");
+            }
+
+
+        }
+
+        if (meteorite.hitbox.intersects(dinoEgg.hitbox) == false) {
+            meteroriteVsdinoEgg = false;
+        }
+
     }
 
     //Paints things on the screen using bufferStrategy
@@ -96,8 +146,9 @@ public class BasicGameApp implements Runnable {
         //draw the images
         g.drawImage(backgroundPic,0,0,WIDTH, HEIGHT, null);
 
-        g.drawImage(dinosaur.pic, dinosaur.xpos, dinosaur.ypos, dinosaur.width, dinosaur.height, null);
-        g.drawImage(meteorite.pic, meteorite.xpos, meteorite.ypos, meteorite.width, meteorite.height, null);
+        g.drawImage(dinosaur.pic, dinosaur.hitbox.x, dinosaur.hitbox.y, dinosaur.width, dinosaur.height, null);
+        g.drawImage(meteorite.pic, meteorite.hitbox.x, meteorite.hitbox.y, meteorite.width, meteorite.height, null);
+        g.drawImage(dinoEgg.pic, dinoEgg.hitbox.x, dinoEgg.hitbox.y, dinoEgg.width, dinoEgg.height, null);
 
         g.dispose();
         bufferStrategy.show();
